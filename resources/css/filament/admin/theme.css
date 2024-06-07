@@ -3,9 +3,9 @@
 @config 'tailwind.config.js';
 
 .fi-simple-layout{
-    @apply bg-cyan-100/50;
+    @apply bg-gradient-to-r from-violet-600 to-indigo-600;
 }
 
 .fi-simple-main{
-    @apply bg-emerald-100/50;
+    @apply bg-emerald-100/50 bg-opacity-50;
 }
