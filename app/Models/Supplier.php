@@ -8,4 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Supplier extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'supplier_name',
+        'contact_name',
+        'phone',
+        'email',
+        'address',
+        'city',
+        'state',
+        'zip_code'
+    ];
 }
