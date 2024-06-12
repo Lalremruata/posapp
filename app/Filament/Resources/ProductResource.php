@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -24,13 +25,16 @@ class ProductResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('product_name')
+                    ->autofocus()
                     ->required()
                     ->maxLength(100),
                 Forms\Components\TextInput::make('product_description')
                     ->required()
                     ->maxLength(200),
-                Forms\Components\TextInput::make('category_id')
-                    ->numeric(),
+                Forms\Components\Select::make('category_id')
+                    ->label('Category')
+                    ->options(ProductCategory::all()->pluck('category_name', 'id'))
+                    ->searchable(),
                 Forms\Components\TextInput::make('selling_price')
                     ->required()
                     ->numeric(),
@@ -42,8 +46,9 @@ class ProductResource extends Resource
                     ->numeric(),
                 Forms\Components\TextInput::make('barcode')
                     ->maxLength(50),
-                Forms\Components\TextInput::make('supplier_id')
-                    ->numeric(),
+                Forms\Components\Select::make('supplier_id')
+                    ->relationship('supplier', 'supplier_name')
+                    ->searchable(),
             ]);
     }
 
