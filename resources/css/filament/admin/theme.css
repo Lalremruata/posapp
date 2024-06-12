@@ -9,10 +9,42 @@
 .fi-simple-main{
     @apply bg-emerald-100/50 bg-opacity-50;
 }
-.fi-dropdown-list
+.fi-dropdown-list .fi-theme-switcher-btn
 {
-    @apply hover:bg-blue-500 focus-visible:bg-blue-500
+    @apply hover:bg-blue-300 focus-visible:bg-blue-500
 }
-.choices .choices__list .choices__list--dropdown{
-    @apply focus:bg-blue-500
+.fi-dropdown-list .fi-dropdown-list-item
+{
+    @apply hover:bg-red-500
+}
+.choices .choices__list .choices__item{
+    @apply hover:bg-blue-300
+}
+.fi .fi-sidebar
+{
+    background-color: #27374D;
+}
+
+.fi-sidebar-item .fi-sidebar-item-button .fi-sidebar-item-label  {
+    @apply text-white
+}
+
+.fi-sidebar-item .fi-sidebar-item-button:hover .fi-sidebar-item-label {
+    @apply text-primary-900;
+}
+
+.fi-sidebar-item-active .fi-sidebar-item-label {
+    @apply text-primary-900 !important;
+}
+
+.fi-topbar .bg-white
+{
+    @apply bg-gray-100
+}
+.fi-sidebar-header
+{
+    @apply bg-gray-100
+}
+.fi-body{
+    background-color: #F9F7F7;
 }
