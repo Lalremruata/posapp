@@ -27,6 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('MR POS')
             ->sidebarCollapsibleOnDesktop()
             ->colors([
                 'danger' => Color::Rose,
