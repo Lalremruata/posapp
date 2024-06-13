@@ -9,6 +9,9 @@
 .fi-simple-main{
     @apply bg-emerald-100/50 bg-opacity-50;
 }
+.fi-dropdown-panel{
+    background-color: white !important;
+}
 .fi-dropdown-list .fi-theme-switcher-btn
 {
     @apply hover:bg-blue-300 focus-visible:bg-blue-500
@@ -39,11 +42,11 @@
 
 .fi-topbar .bg-white
 {
-    @apply bg-gray-100
+    @apply bg-blue-400
 }
 .fi-sidebar-header
 {
-    @apply bg-gray-100
+    @apply bg-blue-400
 }
 .fi-body{
     background-color: #F9F7F7;
