@@ -50,5 +50,5 @@
     @apply bg-blue-400
 }
 .fi-body{
-    background-color: #F9F7F7;
+    @apply text-red-500 !important;
 }
