@@ -23,7 +23,7 @@ class Sales extends Component
     public function selectProduct($productId)
     {
         $this->selectedProduct = Product::find($productId);
-        $this->search = ''; // Clear the search field
+        // $this->search = $this->selectedProduct->product_name; // Clear the search field
         $this->results = []; // Clear the search results
 
         // Add the selected product to the cart
@@ -34,7 +34,7 @@ class Sales extends Component
         // ]);
 
         // $this->emit('productSelected', $this->selectedProduct);
-        $this->emit('productSelected', $this->selectedProduct);
+        $this->dispatch('productSelected');
     }
 
     public function render()
