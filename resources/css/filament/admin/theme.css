@@ -52,3 +52,7 @@
 .fi-body{
     @apply text-red-500 !important;
 }
+.fi-sidebar-group-label
+{
+    @apply text-white
+}
