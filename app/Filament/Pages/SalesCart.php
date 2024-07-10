@@ -28,14 +28,14 @@ use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Query\Builder;
 
 
-class Sales extends Page implements HasForms, HasTable, HasActions
+class SalesCart extends Page implements HasForms, HasTable, HasActions
 {
     protected static ?string $model = SaleCart::class;
     use InteractsWithForms;
     use InteractsWithTable;
     use InteractsWithActions;
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
-    protected static ?string $navigationLabel = 'Sale Cart';
+    protected static ?string $navigationLabel = 'Sales Cart';
     protected static ?string $navigationGroup = 'Sales';
 
     protected static string $view = 'filament.pages.sales';
