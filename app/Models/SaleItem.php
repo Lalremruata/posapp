@@ -13,6 +13,7 @@ class SaleItem extends Model
         "sale_id",
         "product_id",
         "quantity",
+        "sale_date",
         "price",
     ];
     public function product(): BelongsTo

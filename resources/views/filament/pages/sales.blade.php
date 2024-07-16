@@ -46,16 +46,17 @@
                 </x-filament::section>
             </div>
     </div>
+    @script
     <script>
         document.addEventListener('livewire:load', function () {
             Livewire.on('formSaved', function () {
                 const select = document.querySelector('[ref="productSelect"]');
-                if (select) {
                     console.log('Saved');
                     select.focus();
-                }
+                
             });
         });
     </script>
+    @endscript
     <x-filament-actions::modals />
 </x-filament-panels::page>

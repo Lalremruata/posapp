@@ -20,6 +20,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'store_id'
     ];
 
     /**
@@ -47,5 +48,13 @@ class User extends Authenticatable
     public function roles()
     {
         return $this->belongsToMany(Role::class);
+    }
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
+    public function sales()
+    {
+        return $this->hasMany(Sale::class);
     }
 }

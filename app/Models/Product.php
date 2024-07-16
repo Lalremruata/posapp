@@ -28,4 +28,18 @@ class Product extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+    public function stocks()
+    {
+        return $this->hasMany(Stock::class);
+    }
+    public function sales()
+    {
+        return $this->hasMany(Sale::class);
+    }
+
+    public function saleItems()
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
 }

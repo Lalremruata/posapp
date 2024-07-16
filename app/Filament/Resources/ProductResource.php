@@ -41,9 +41,6 @@ class ProductResource extends Resource
                 Forms\Components\TextInput::make('cost_price')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('quantity_in_stock')
-                    ->required()
-                    ->numeric(),
                 Forms\Components\TextInput::make('barcode')
                     ->maxLength(50),
                 Forms\Components\Select::make('supplier_id')
@@ -69,12 +66,9 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('cost_price')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('quantity_in_stock')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('barcode')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('supplier_id')
+                Tables\Columns\TextColumn::make('supplier.supplier_name')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -105,6 +99,7 @@ class ProductResource extends Resource
             //
         ];
     }
+
 
     public static function getPages(): array
     {

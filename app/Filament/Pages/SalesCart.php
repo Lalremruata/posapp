@@ -70,13 +70,13 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                     ->searchPrompt('Search by name or barcode')
                     ->searchingMessage('Searching products...')
                     ->required()
-                    ->native(false),
+                    ->native(false)
+                    ->extraAttributes(['ref' => 'productSelect']),
                 TextInput::make('quantity')
                     ->label('quantity')
                     ->numeric()
                     ->default(1)
-                    ->required()
-                    ->extraAttributes(['ref' => 'productSelect']),
+                    ->required(),
             ])->columns(2)
             ->statePath('data');
     }
