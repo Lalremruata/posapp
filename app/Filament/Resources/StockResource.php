@@ -12,6 +12,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -33,10 +34,16 @@ class StockResource extends Resource
                 Forms\Components\Select::make('product_id')
                     ->label('Select Product')
                     ->searchable()
-                    ->getSearchResultsUsing(fn (string $search): array => Product::where('product_name', 'like', "%{$search}%")
-                    ->orWhere('barcode', 'like', "%{$search}%")
-                    ->limit(20)->pluck('product_name', 'id')->toArray())
-                    ->noSearchResultsMessage('No products found.')
+                    ->relationship(
+                        name: 'product',
+                        modifyQueryUsing: fn (Builder $query) => $query->orderBy('product_name')->orderBy('product_description'),
+                    )
+                    ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->product_name} ({$record->product_description})")
+                    ->searchable(['product_name', 'barcode'])
+                    // ->getSearchResultsUsing(fn (string $search): array => Product::where('product_name', 'like', "%{$search}%")
+                    //     ->orWhere('barcode', 'like', "%{$search}%")
+                    //     ->limit(20)->pluck('product_name', 'id')->toArray())
+                    // ->getOptionLabelsUsing(fn (array $values): array => Product::whereIn('product_description', $values)->pluck('product_name', 'id')->toArray())                    ->noSearchResultsMessage('No products found.')
                     ->searchPrompt('Search by name or barcode')
                     ->searchingMessage('Searching products...')
                     ->required()
@@ -74,6 +81,7 @@ class StockResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
