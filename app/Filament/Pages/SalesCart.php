@@ -26,7 +26,7 @@ use Filament\Forms\Components\Wizard\Step;
 use Filament\Support\Exceptions\Halt;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Query\Builder;
-
+use Illuminate\Database\Eloquent\Model;
 
 class SalesCart extends Page implements HasForms, HasTable, HasActions
 {
@@ -63,20 +63,28 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                     ->searchable()
                     ->autofocus()
                     ->label('Search Product')
-                    ->getSearchResultsUsing(fn (string $search): array => Product::where('product_name', 'like', "%{$search}%")
-                        ->orWhere('barcode', 'like', "%{$search}%")
-                        ->limit(20)->pluck('product_name', 'id')->toArray())
+                    ->relationship(
+                        name: 'product',
+                        modifyQueryUsing: fn (Builder $query) => $query->whereHas('stocks', function (Builder $query) {
+                            $query->where('store_id', auth()->user()->store_id);
+                        })->orderBy('product_name')->orderBy('product_description'),
+                    )
+                    ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->product_name} ({$record->product_description})")
+                    ->searchable(['product_name', 'barcode'])
+                    // ->getSearchResultsUsing(fn (string $search): array => Product::where('product_name', 'like', "%{$search}%")
+                    //     ->orWhere('barcode', 'like', "%{$search}%")
+                    //     ->limit(20)->pluck('product_name', 'id')->toArray())
                     ->noSearchResultsMessage('No products found.')
                     ->searchPrompt('Search by name or barcode')
                     ->searchingMessage('Searching products...')
                     ->required()
-                    ->native(false)
-                    ->extraAttributes(['ref' => 'productSelect']),
+                    ->native(false),
                 TextInput::make('quantity')
                     ->label('quantity')
                     ->numeric()
                     ->default(1)
-                    ->required(),
+                    ->required()
+                    ->extraAttributes(['ref' => 'productSelect']),
             ])->columns(2)
             ->statePath('data');
     }

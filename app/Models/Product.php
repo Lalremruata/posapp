@@ -20,9 +20,9 @@ class Product extends Model
         'barcode',
         'supplier_id'
     ];
-    public function categories(): BelongsToMany
+    public function category(): BelongsTo
     {
-        return $this->belongsToMany(ProductCategory::class);
+        return $this->belongsTo(ProductCategory::class);
     }
     public function supplier(): BelongsTo
     {
@@ -40,6 +40,10 @@ class Product extends Model
     public function saleItems()
     {
         return $this->hasMany(SaleItem::class);
+    }
+    public function saleCart()
+    {
+        return $this->hasMany(SaleCart::class);
     }
 
 }

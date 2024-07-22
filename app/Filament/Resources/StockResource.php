@@ -64,6 +64,9 @@ class StockResource extends Resource
                 Tables\Columns\TextColumn::make('product.product_name')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('product.category.category_name')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('quantity')
                     ->numeric()
                     ->sortable(),

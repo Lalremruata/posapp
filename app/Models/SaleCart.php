@@ -10,6 +10,7 @@ class SaleCart extends Model
     use HasFactory;
     protected $fillable = [
         "user_id",
+        "store_id",
         "product_id",
         "quantity",
         "cost_price",
@@ -21,5 +22,9 @@ class SaleCart extends Model
     }
     public function user(){
         return $this->belongsTo(User::class);
+    }
+    public function store()
+    {
+        return $this->belongsTo(Store::class, 'StoreID');
     }
 }

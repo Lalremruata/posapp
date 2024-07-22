@@ -30,4 +30,9 @@ class Store extends Model
     {
         return $this->hasMany(SaleItem::class);
     }
+    public function saleCart()
+    {
+        return $this->hasMany(SaleCart::class, 'StoreID');
+    }
+
 }
