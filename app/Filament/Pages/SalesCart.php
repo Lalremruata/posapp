@@ -64,7 +64,7 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                     ->autofocus()
                     ->label('Search Product')
                     ->relationship(
-                        name: 'product',
+                        name: 'stock',
                         modifyQueryUsing: fn (Builder $query) => $query->whereHas('stocks', function (Builder $query) {
                             $query->where('store_id', auth()->user()->store_id);
                         })->orderBy('product_name')->orderBy('product_description'),
