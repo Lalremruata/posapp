@@ -7,6 +7,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
 use App\Filament\Pages\Auth\Login;
+use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -64,6 +65,21 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->viteTheme('resources/css/filament/admin/theme.css');
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->navigationGroups([
+                NavigationGroup::make()
+                     ->label('Sales'),
+                NavigationGroup::make()
+                     ->label('Manage Products'),
+                NavigationGroup::make()
+                     ->label('Manage Stocks')
+                     ->collapsed(true),
+                NavigationGroup::make()
+                     ->label('Manage Customers')
+                     ->collapsed(true),
+                NavigationGroup::make()
+                     ->label('Settings')
+                     ->collapsed(true),
+            ]);
     }
 }
