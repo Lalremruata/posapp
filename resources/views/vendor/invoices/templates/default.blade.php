@@ -368,7 +368,7 @@
             {{ __('invoices::invoice.amount_in_words') }}: {{ $invoice->getTotalAmountInWords() }}
         </p>
         <p>
-            {{ __('invoices::invoice.pay_until') }}: {{ $invoice->getPayUntilDate() }}
+            {{-- {{ __('invoices::invoice.pay_until') }}: {{ $invoice->getPayUntilDate() }} --}}
         </p>
 
         <script type="text/php">

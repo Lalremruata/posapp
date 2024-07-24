@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SaleResource\Pages;
 use App\Filament\Resources\SaleResource\RelationManagers;
 use App\Models\Sale;
+use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -45,7 +46,7 @@ class SaleResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')
+                Tables\Columns\TextColumn::make('store.store_name')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('payment_method')
@@ -72,6 +73,13 @@ class SaleResource extends Resource
                 //
             ])
             ->actions([
+                \Filament\Tables\Actions\Action::make('print receipt')
+                ->icon('heroicon-o-printer')
+                ->color('danger')
+                ->url(function(Sale $sale)
+                {
+                    return route('sale.receipt.download', $sale);
+                }),
                 Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([

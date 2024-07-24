@@ -11,6 +11,7 @@ class SaleCart extends Model
     protected $fillable = [
         "user_id",
         "store_id",
+        "stock_id",
         "product_id",
         "quantity",
         "cost_price",
@@ -25,6 +26,10 @@ class SaleCart extends Model
     }
     public function store()
     {
-        return $this->belongsTo(Store::class, 'StoreID');
+        return $this->belongsTo(Store::class);
+    }
+    public function stock()
+    {
+        return $this->belongsTo(Stock::class);
     }
 }

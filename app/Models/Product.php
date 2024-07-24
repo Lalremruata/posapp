@@ -45,5 +45,9 @@ class Product extends Model
     {
         return $this->hasMany(SaleCart::class);
     }
+    public function getProductInfoAttribute()
+    {
+        return $this->product_name . ' - ' . $this->product_description;
+    }
 
 }

@@ -11,7 +11,7 @@ class Sale extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'store_id','user_id', 'payment_method', 'sale_date', 'customer_id', 'total_amount'
+        'store_id','user_id', 'stock_id', 'payment_method', 'sale_date', 'customer_id', 'total_amount'
     ];
     public function user(): BelongsTo{
         return $this->belongsTo(User::class);
