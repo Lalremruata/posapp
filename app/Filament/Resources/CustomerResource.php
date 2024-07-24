@@ -19,6 +19,10 @@ class CustomerResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationGroup = 'Manage Customers';
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->roles->first()->name == 'Admin';
+    }
 
     public static function form(Form $form): Form
     {

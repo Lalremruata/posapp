@@ -2,28 +2,27 @@
 
 namespace Database\Seeders;
 
-use App\Models\Store;
+use App\Models\Role;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class StoreSeeder extends Seeder
+class RolesTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $stores = [
+        $roles = [
             [
-                'store_name'=>'Main Store',
-                'store_type' => 'main',
+                'id' => 1,
+                'name' => 'Admin',
             ],
             [
-                'store_name'=>'Branch Store',
-                'store_type' => 'branch',
+                'id' => 2,
+                'name' => 'Employee',
             ],
-
         ];
-        Store::insert($stores);
+        Role::insert($roles);
     }
 }

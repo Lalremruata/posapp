@@ -20,7 +20,10 @@ class ProductResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
     protected static ?string $navigationGroup = 'Manage Products';
-
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->roles->first()->name == 'Admin';
+    }
 
     public static function form(Form $form): Form
     {

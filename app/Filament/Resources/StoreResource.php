@@ -20,6 +20,10 @@ class StoreResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
     protected static ?string $navigationGroup = 'Manage Stocks';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->roles->first()->name == 'Admin';
+    }
     public static function form(Form $form): Form
     {
         return $form

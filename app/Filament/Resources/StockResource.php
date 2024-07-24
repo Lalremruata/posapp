@@ -22,6 +22,16 @@ class StockResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Manage Stocks';
+    public static function getEloquentQuery(): Builder
+    {
+        if(auth()->user()->roles() == 'Admin') {
+            return parent::getEloquentQuery()->withoutGlobalScopes();
+        }
+        else {
+            return parent::getEloquentQuery()->where('store_id', auth()->user()->store_id);
+
+        }
+    }
 
     public static function form(Form $form): Form
     {
@@ -29,7 +39,14 @@ class StockResource extends Resource
             ->schema([
                 Forms\Components\Select::make('store_id')
                     ->label('Select Store')
-                    ->options(Store::all()->pluck('store_name', 'id'))
+                    ->options(function(){
+                        if(auth()->user()->roles()== 'Admin')
+                        Store::all()->pluck('store_name', 'id');
+                    else
+                        return Store::where('id',auth()->user()->store_id)->pluck('store_name', 'id');
+                    
+                        
+                 })
                     ->searchable()
                     ->required(),
                 Forms\Components\Select::make('product_id')

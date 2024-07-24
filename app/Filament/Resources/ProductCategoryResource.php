@@ -20,6 +20,10 @@ class ProductCategoryResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-cube';
     protected static ?string $navigationGroup = 'Manage Products';
     protected static ?string $navigationLabel = 'Category';
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->roles->first()->name == 'Admin';
+    }
     public static function form(Form $form): Form
     {
         return $form

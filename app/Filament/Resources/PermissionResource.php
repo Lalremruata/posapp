@@ -21,6 +21,10 @@ class PermissionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-check-badge';
     protected static ?string $navigationGroup = 'Settings';
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->roles->first()->name == 'Admin';
+    }
 
     public static function form(Form $form): Form
     {

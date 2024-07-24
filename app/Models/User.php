@@ -58,7 +58,19 @@ class User extends Authenticatable
         return $this->hasMany(Sale::class);
     }
     public function saleCart()
-{
-    return $this->hasMany(SaleCart::class);
-}
+    {
+        return $this->hasMany(SaleCart::class);
+    }
+    public function hasPermission(string $permission): bool
+    {
+        $permissionsArray = [];
+
+        foreach($this->roles as $role){
+            foreach($role->permissions as $singlePermission){
+                $permissionsArray[] = $singlePermission->name;
+            }
+        }
+
+        return collect($permissionsArray)->unique()->contains($permission);
+    }
 }

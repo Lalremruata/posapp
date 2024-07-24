@@ -18,7 +18,15 @@ class UserSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@example.com',
             'password' => bcrypt('password'),
+            'remember_token' => null,
             'store_id' => '1',
+            ],
+            [
+                'name' => 'Agent',
+                'email' => 'agent@agent.com',
+                'password' => bcrypt('password'),
+                'remember_token' => null,
+                'store_id' => '2',
             ],
         ];
         User::insert($users);
