@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
+use App\Forms\Components\BarcodeGenerator;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use Filament\Forms;
@@ -47,7 +48,13 @@ class ProductResource extends Resource
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('barcode')
-                    ->maxLength(50),
+                    ->maxLength(50)
+                    ->afterStateHydrated(function ($component, $state) {
+                        // Ensure the barcode input displays the current state
+                        $component->state($state);
+                    }),,
+                BarcodeGenerator::make('barcode')
+                    ->label('Barcode Generator'),
                 Forms\Components\Select::make('supplier_id')
                     ->relationship('supplier', 'supplier_name')
                     ->searchable(),
