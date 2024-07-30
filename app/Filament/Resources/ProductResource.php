@@ -8,7 +8,9 @@ use App\Forms\Components\BarcodeGenerator;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use Filament\Forms;
+use Filament\Forms\Components\ViewField;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -30,6 +32,13 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Section::make()
+                ->columns([
+                    'sm' => 2,
+                    'xl' => 2,
+                    '2xl' => 2,
+                ])
+                ->schema([
                 Forms\Components\TextInput::make('product_name')
                     ->autofocus()
                     ->required()
@@ -47,17 +56,35 @@ class ProductResource extends Resource
                 Forms\Components\TextInput::make('cost_price')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('barcode')
-                    ->maxLength(50)
-                    ->afterStateHydrated(function ($component, $state) {
-                        // Ensure the barcode input displays the current state
-                        $component->state($state);
-                    }),,
-                BarcodeGenerator::make('barcode')
-                    ->label('Barcode Generator'),
                 Forms\Components\Select::make('supplier_id')
                     ->relationship('supplier', 'supplier_name')
                     ->searchable(),
+                Forms\Components\TextInput::make('barcode')
+                    ->label('Barcode')
+                    ->reactive(),
+                Forms\Components\ToggleButtons::make('barcode_generator')
+                ->label('')
+                    ->options([
+                        'generate-barcode' => 'Generate Barcode',
+                    ])
+                    ->icons([
+                        'generate-barcode' => 'heroicon-o-check-badge',
+                    ])
+                    ->colors([
+                        'generate-barcode'=> 'warning',
+                    ])
+                    ->afterStateUpdated(function($set){
+                        $set('barcode', str_pad((string)rand(0, 99999999), 9, '0', STR_PAD_LEFT));
+                    })
+                    ->extraAttributes([
+                        'class' => 'pt-6 bg-gray-500 tex-red-500',
+                    ])
+                    ->dehydrated(false)
+                    ->reactive(),
+
+                    // ...
+                ])
+
             ]);
     }
 
@@ -91,12 +118,17 @@ class ProductResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('created_at', 'desc')
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('barCode')
+                ->url(function (Product $record) {
+                   return static::getUrl('barCode',['record'=>$record]);
+
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -119,6 +151,7 @@ class ProductResource extends Resource
             'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
+            'barCode' => Pages\GeneratedBarCode::route('/{record}/barcode'),
         ];
     }
 }

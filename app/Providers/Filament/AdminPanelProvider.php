@@ -30,7 +30,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('')
             ->login(Login::class)
             ->brandName('MR POS')
+            ->favicon(asset('img/favicon.png'))
             ->sidebarCollapsibleOnDesktop()
+            ->font('Poppins')
             ->darkMode(false)
             ->colors([
                 'danger' => Color::Rose,

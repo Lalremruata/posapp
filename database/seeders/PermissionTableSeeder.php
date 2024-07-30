@@ -92,7 +92,22 @@ class PermissionTableSeeder extends Seeder
             [
                 'name' => 'supplier_access',
             ],
-            
+            [
+                'name' => 'sale_create',
+            ],
+            [
+                'name' => 'sale_edit',
+            ],
+            [
+                'name' => 'sale_show',
+            ],
+            [
+                'name' => 'sale_delete',
+            ],
+            [
+                'name' => 'sale_access',
+            ],
+
         ];
         Permission::insert($permissions);
     }
