@@ -59,31 +59,34 @@ class ProductResource extends Resource
                 Forms\Components\Select::make('supplier_id')
                     ->relationship('supplier', 'supplier_name')
                     ->searchable(),
-                Forms\Components\TextInput::make('barcode')
-                    ->label('Barcode')
-                    ->reactive(),
-                Forms\Components\ToggleButtons::make('barcode_generator')
-                ->label('')
-                    ->options([
-                        'generate-barcode' => 'Generate Barcode',
-                    ])
-                    ->icons([
-                        'generate-barcode' => 'heroicon-o-check-badge',
-                    ])
-                    ->colors([
-                        'generate-barcode'=> 'warning',
-                    ])
-                    ->afterStateUpdated(function($set){
-                        $set('barcode', str_pad((string)rand(0, 99999999), 9, '0', STR_PAD_LEFT));
-                    })
-                    ->extraAttributes([
-                        'class' => 'pt-6 bg-gray-500 tex-red-500',
-                    ])
-                    ->dehydrated(false)
-                    ->reactive(),
+                BarcodeGenerator::make('barcode')
+                ->helperText('Click the button to generate barcode.'),
+                // Forms\Components\TextInput::make('barcode')
+                //     ->label('Barcode')
+                //     ->reactive(),
+                // Forms\Components\ToggleButtons::make('barcode_generator')
+                // ->label('')
+                //     ->options([
+                //         'generate-barcode' => 'Generate Barcode',
+                //     ])
+                //     ->icons([
+                //         'generate-barcode' => 'heroicon-o-check-badge',
+                //     ])
+                //     ->colors([
+                //         'generate-barcode'=> 'warning',
+                //     ])
+                //     ->afterStateUpdated(function($set){
+                //         $set('barcode', str_pad((string)rand(0, 99999999), 9, '0', STR_PAD_LEFT));
+                //     })
+                //     ->extraAttributes([
+                //         'class' => 'pt-6 bg-gray-500 tex-red-500',
+                //     ])
+                //     ->dehydrated(false)
+                //     ->reactive(),
 
                     // ...
                 ])
+
 
             ]);
     }

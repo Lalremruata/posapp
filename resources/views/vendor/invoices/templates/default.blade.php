@@ -24,7 +24,7 @@
 
             h4 {
                 margin-top: 0;
-                margin-bottom: 0.5rem;
+                margin-bottom: 0;
             }
 
             p {
@@ -134,7 +134,7 @@
             <img src="{{ $invoice->getLogo() }}" alt="logo" height="100">
         @endif
 
-        <table class="table mt-5">
+        <table class="table mt-0">
             <tbody>
                 <tr>
                     <td class="border-0 pl-0" width="70%">

@@ -7,9 +7,8 @@ use Filament\Forms\Components\Field;
 class BarcodeGenerator extends Field
 {
     protected string $view = 'forms.components.barcode-generator';
-
-    public static function make(string $name): static
+    public function getStatePath(bool $isAbsolute = true): string
     {
-        return (new static($name));
+        return parent::getStatePath($isAbsolute);
     }
 }

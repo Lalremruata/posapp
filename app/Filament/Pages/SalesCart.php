@@ -117,7 +117,12 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                     ->default(1)
                     ->required()
                     ->extraAttributes(['ref' => 'productSelect']),
+                TextInput::make('discount')
+                ->label('discount')
+                ->default(0)
+                ->numeric(),
                 Hidden::make('stock_id')
+                ->reactive()
             ])->columns(2)
             ->statePath('data');
     }
@@ -132,7 +137,8 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                     TextColumn::make('quantity'),
                     TextColumn::make('selling_price')
                     ->label('Price'),
-                    TextColumn::make('discount'),
+                    TextColumn::make('discount')
+                    ->suffix('%'),
             ])
             ->actions([
                 DeleteAction::make()
@@ -148,17 +154,36 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
         try {
             $data = $this->form->getState();
             $product = Product::find($data['product_id']);
-            $data = [
-                'user_id'=> auth()->user()->id,
-                'product_id' => $product->id,
-                'store_id' => auth()->user()->store_id,
-                'stock_id' => $data['stock_id'],
-                'quantity'  => $data['quantity'],
-                'cost_price'=>$product->cost_price,
-                'selling_price' => $product->selling_price,
-                'discount' =>0,
-            ];
-            SaleCart::create($data);
+            $cartItem = SaleCart::where('stock_id', $data['stock_id'])->first();
+            $totalPrice = $product->selling_price * $data['quantity'];
+            if(!$cartItem)
+            {
+
+                $newData = [
+                    'user_id'=> auth()->user()->id,
+                    'product_id' => $product->id,
+                    'store_id' => auth()->user()->store_id,
+                    'stock_id' => $data['stock_id'],
+                    'quantity'  => $data['quantity'],
+                    'cost_price'=>$product->cost_price,
+                    'selling_price' => $totalPrice - ($totalPrice * ($data['discount']/100)),
+                    'discount' =>$data['discount'],
+                ];
+                $data += $newData;
+                SaleCart::create($data);
+            }
+            else{
+                // $stock=Stock::where('id', $data['stock_id'])->first();
+                // $user_id= auth()->user()->id;
+                // $product_id => $product->id,
+                // 'store_id' => auth()->user()->store_id,
+                // 'stock_id' => $data['stock_id'],
+                $cartItem->quantity += $data['quantity'];
+                // 'cost_price'=>$product->cost_price,
+                $cartItem->selling_price += $totalPrice - ($totalPrice * ($data['discount']/100));
+                $cartItem->discount = $data['discount'];
+                $cartItem->update();
+            }
             $this->updateTotal();
             $this->form->fill();
             $this->dispatch('formSaved');

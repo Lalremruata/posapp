@@ -5,10 +5,15 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Filament\Resources\UserResource\RelationManagers\RolesRelationManager;
+use App\Models\Store;
 use App\Models\User;
+use Closure;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Pages\Page;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Resource;
@@ -35,17 +40,27 @@ class UserResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->afterStateUpdated(function(Set $set,string $state){
+                        $set('email', $state.'@pos.com');
+                    })
+                    ->reactive()
+                    ->live(onBlur: true),
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->reactive(),
                 TextInput::make('password')
                     ->password()
                     ->revealable()
                     ->dehydrateStateUsing(fn ($state) => Hash::make($state))
                     ->dehydrated(fn ($state) => filled($state))
                     ->required(fn ($livewire) => ($livewire instanceof CreateRecord)),
+                Select::make('store_id')
+                ->label('Store')
+                ->options(Store::all()->pluck('store_name', 'id'))
+                ->searchable(),
                 Forms\Components\DateTimePicker::make('email_verified_at'),
             ]);
     }

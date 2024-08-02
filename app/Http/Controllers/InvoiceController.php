@@ -15,6 +15,7 @@ class InvoiceController extends Controller
 {
     public function downloadInvoice(Request $request, Sale $sale)
     {
+
         $date = Carbon::now();
         $formattedYear = $date->format('y');
         $salesItem = SaleItem::where('sale_id', $sale->id)->get();
@@ -26,7 +27,7 @@ class InvoiceController extends Controller
             ],
         ]);
         $customer = new Party([
-            'name'          => optional($sale->customer)->customer_name,
+            'name'          => optional($sale->customer)->name,
             'phone'       => optional($sale->customer)->phone,
             'custom_fields' => [
                 'Bill number' =>  $sale->id.'/'.$formattedYear,
@@ -43,7 +44,8 @@ class InvoiceController extends Controller
             return Invoice::makeItem($salesItem->product->product_name)
                 ->title($salesItem->product->product_name.' '.$salesItem->product->product_description)
                 ->pricePerUnit($salesItem->price)
-                ->quantity($salesItem->quantity);
+                ->quantity($salesItem->quantity)
+                ->subTotalPrice($salesItem->price);
         })->toArray();
 
         $invoice = Invoice::make('receipt')
@@ -57,9 +59,9 @@ class InvoiceController extends Controller
             ->currencyFormat('{SYMBOL}{VALUE}')
             ->currencyThousandsSeparator(',')
             ->addItems($salesitem)
-            ->status('paid')
             ->series($formattedYear)
             ->sequence($sale->id)
+            ->date(Carbon::parse($sale->sale_date))
             ->delimiter('/')
             ->payUntilDays(0)
             // ->logo(public_path('/images/bcm-logo.svg'))
