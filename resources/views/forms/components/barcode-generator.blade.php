@@ -10,7 +10,6 @@
             <x-filament::input
                 type="text"
                 x-model="barcode"
-                readonly
                 class="block w-full"
             />
         </x-filament::input.wrapper>

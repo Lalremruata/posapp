@@ -5,8 +5,12 @@
         <h1 class="text-2xl font-semibold mb-4">{{$this->getRecord()->product_name}} Barcode</h1>
 
         <!-- Barcode Image -->
+        <div class="flex">
+            <span class="text-lg mt-2 font-mono" id="productName">{{$this->getRecord()->product_name}}</span>
+            <span class="text-lg mt-2 font-mono" id="sellingPrice">{{$this->getRecord()->selling_price}}</span>
+        </div>
         <img id="barcodeImage" src="data:image/png;base64,{{ $barcodeImage }}" alt="Barcode" />
-        <span class="text-lg mt-2 font-mono">{{$this->getRecord()->barcode}}</span>
+        <span class="text-lg mt-2 font-mono" id="barcodeText">{{$this->getRecord()->barcode}}</span>
 
         <!-- Download Barcode Button -->
         <x-filament::button
@@ -48,38 +52,33 @@
 
         /* General styles for printing */
         @media print {
-            /* Hide print button when printing */
-            button, a {
-                display: none;
-            }
-
-            /* Ensure barcode is centered on printed page */
-            body * {
-                visibility: hidden;
-            }
-
-            #barcodeImage, #barcodeImage * {
-                visibility: visible;
-            }
-
-            #barcodeImage,h1 {
-                position: relative; /* Ensure it stays within page boundaries */
-                display: block;
-                /* margin: 0 auto; Center horizontally on the page */
-                width: auto; /* Maintain original width */
-                height: auto; /* Maintain aspect ratio */
-                max-width: 200mm; /* Set a maximum width to prevent stretching */
-                max-height: 100mm; /* Set a maximum height to prevent stretching */
-                border: none; /* Remove border for printing */
-                padding: 0;
-                box-shadow: none;
-            }
-            .text-lg {
-                font-size: 12pt;
-                text-align: center;
-                visibility: visible;
-            }
-
+    button, a {
+        display: none;
+    }
+    body * {
+        visibility: hidden;
+    }
+    #barcodeImage, #barcodeImage *, #productName, #sellingPrice, #barcodeText {
+        visibility: visible;
+    }
+    #barcodeImage, h1, #productName, #sellingPrice, #barcodeText {
+        position: relative;
+        display: block;
+        margin: 0 auto;
+        width: auto;
+        height: auto;
+        max-width: 200mm;
+        max-height: 100mm;
+        border: none;
+        padding: 0;
+        box-shadow: none;
+        text-align: center;
+    }
+    .text-lg {
+        font-size: 12pt;
+        text-align: center;
+        visibility: visible;
+    }
             /* Avoid page break issues for barcode display */
             @page {
                 margin: 10mm; /* Remove default margins */
@@ -93,24 +92,37 @@
          function downloadBarcode() {
             const canvas = document.createElement('canvas');
             const imgElement = document.getElementById('barcodeImage');
-            const textElement = document.querySelector('.text-lg');
+            const barcodeTextElement = document.getElementById('barcodeText');
+            const productNameElement = document.getElementById('productName');
+            const sellingPriceElement = document.getElementById('sellingPrice');
 
             // Set canvas size
-            canvas.width = imgElement.naturalWidth;
-            canvas.height = imgElement.naturalHeight + 30; // Extra space for text
+            const padding = 50; // Add some padding for aesthetics
+            canvas.width = Math.max(imgElement.naturalWidth, 400) + padding; // Set minimum width
+            canvas.height = imgElement.naturalHeight + 100 + padding; // Extra space for text
 
             const ctx = canvas.getContext('2d');
+            // Fill background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw the barcode image on the canvas
-            ctx.drawImage(imgElement, 0, 0);
 
             // Set text properties
             ctx.font = '16px monospace';
             ctx.textAlign = 'center';
             ctx.fillStyle = 'black';
 
+            // Draw the product name above the image
+            ctx.fillText(productNameElement.textContent, canvas.width / 2, 30);
+
+            // Draw the selling price below the product name
+            ctx.fillText(sellingPriceElement.textContent, canvas.width / 2, 60);
+
+            // Draw the barcode image on the canvas
+             const barcodeX = (canvas.width - imgElement.naturalWidth) / 2;
+            ctx.drawImage(imgElement, barcodeX, 80);
             // Draw the barcode text below the image
-            ctx.fillText(textElement.textContent, canvas.width / 2, imgElement.naturalHeight + 20);
+            ctx.fillText(barcodeTextElement.textContent, canvas.width / 2, imgElement.naturalHeight + 100);
 
             // Convert canvas to data URL
             const link = document.createElement('a');
