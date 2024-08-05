@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('')
             ->login(Login::class)
             ->brandName('MR POS')
-            ->favicon(asset('img/favicon.png'))
+            ->favicon(asset('images/favicon.ico'))
             ->sidebarCollapsibleOnDesktop()
             ->font('Poppins')
             ->darkMode(false)
