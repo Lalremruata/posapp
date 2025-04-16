@@ -29,10 +29,13 @@ class SaleItemsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('sale_id')
             ->columns([
-                Tables\Columns\TextColumn::make('sale_id'),
+                Tables\Columns\TextColumn::make('Sl No')
+                    ->rowIndex(),
                 Tables\Columns\TextColumn::make('product.product_name'),
                 Tables\Columns\TextColumn::make('quantity'),
-                Tables\Columns\TextColumn::make('price'),
+                Tables\Columns\TextColumn::make('cost_price'),
+                Tables\Columns\TextColumn::make('selling_price'),
+                Tables\Columns\TextColumn::make('total_price'),
             ])
             ->filters([
                 //

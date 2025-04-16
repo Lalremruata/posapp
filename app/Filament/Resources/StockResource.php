@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\StockResource\Pages;
 use App\Filament\Resources\StockResource\RelationManagers;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Models\Stock;
 use App\Models\Store;
 use Filament\Forms;
@@ -15,6 +16,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Livewire\Component as Livewire;
 
 class StockResource extends Resource
 {
@@ -37,6 +39,8 @@ class StockResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Section::make()
+            ->schema([
                 Forms\Components\Select::make('store_id')
                     ->label('Select Store')
                     ->options(function(){
@@ -44,36 +48,65 @@ class StockResource extends Resource
                         {
                             return Store::all()->pluck('store_name', 'id');
                         }
-                    else
-                        return Store::where('id',auth()->user()->store_id)->pluck('store_name', 'id');
+                        else
+                            return Store::where('id',auth()->user()->store_id)->pluck('store_name', 'id');
 
 
-                 })
-                 ->default(function(){
-                    return Store::where('id',auth()->user()->store_id)->first()?->id;
-                     })
+                    })
+                    ->default(function(){
+                        return Store::where('id',auth()->user()->store_id)->first()?->id;
+                    })
                     ->searchable()
                     ->required(),
-                Forms\Components\Select::make('product_id')
-                    ->label('Select Product')
-                    ->searchable()
-                    ->relationship(
-                        name: 'product',
-                        modifyQueryUsing: fn (Builder $query) => $query->orderBy('product_name')->orderBy('product_description'),
-                    )
-                    ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->product_name} ({$record->product_description})")
-                    ->searchable(['product_name', 'barcode'])
-                    // ->getSearchResultsUsing(fn (string $search): array => Product::where('product_name', 'like', "%{$search}%")
-                    //     ->orWhere('barcode', 'like', "%{$search}%")
-                    //     ->limit(20)->pluck('product_name', 'id')->toArray())
-                    // ->getOptionLabelsUsing(fn (array $values): array => Product::whereIn('product_description', $values)->pluck('product_name', 'id')->toArray())                    ->noSearchResultsMessage('No products found.')
-                    ->searchPrompt('Search by name or barcode')
-                    ->searchingMessage('Searching products...')
-                    ->required()
-                    ->native(false),
-                Forms\Components\TextInput::make('quantity')
-                    ->required()
-                    ->numeric(),
+            ]),
+                Forms\Components\Section::make()
+                    ->columns(2)
+                    ->schema([
+                        Forms\Components\Select::make('category_id')
+                            ->label('Select Category')
+                           ->options(ProductCategory::pluck('category_name','id'))
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (Livewire $livewire, Forms\Set $set) {
+                                $set('product_id', null);
+                            })
+                            ->reactive(),
+                        Forms\Components\Select::make('product_id')
+                            ->label('Select Product')
+                            ->options(function (Forms\Get $get) {
+                                $categoryId = $get('category_id');
+
+                                if (!$categoryId) {
+                                    return [];
+                                }
+
+                                return Product::where('category_id', $categoryId)
+                                    ->orderBy('product_name')
+                                    ->orderBy('product_description')
+                                    ->get()
+                                    ->pluck('product_info', 'id');
+                            })
+                            ->getOptionLabelUsing(function ($value): ?string {
+                                $product = Product::find($value);
+
+                                if (!$product) {
+                                    return null;
+                                }
+
+                                return "{$product->product_name} ({$product->product_description})";
+                            })
+                            ->reactive()
+                            ->searchable()
+                            ->placeholder(fn (Forms\Get $get): string =>
+                            empty($get('category_id')) ? 'First select category' : 'Select a product'
+                            )
+                            ->required()
+                            ->native(false)
+                            ->disabled(fn (Forms\Get $get): bool => !$get('category_id')),
+                        Forms\Components\TextInput::make('quantity')
+                            ->required()
+                            ->numeric(),
+                    ]),
             ]);
     }
 

@@ -63,7 +63,7 @@ class CustomerResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+//                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
@@ -78,5 +78,10 @@ class CustomerResource extends Resource
         return [
             'index' => Pages\ManageCustomers::route('/'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
     }
 }

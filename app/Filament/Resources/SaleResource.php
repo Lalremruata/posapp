@@ -100,9 +100,13 @@ class SaleResource extends Resource
     {
         return [
             'index' => Pages\ListSales::route('/'),
-            'create' => Pages\CreateSale::route('/create'),
+//            'create' => Pages\CreateSale::route('/create'),
             'view' => Pages\ViewSale::route('/{record}'),
             'edit' => Pages\EditSale::route('/{record}/edit'),
         ];
+    }
+    public static function canCreate(): bool
+    {
+        return false;
     }
 }

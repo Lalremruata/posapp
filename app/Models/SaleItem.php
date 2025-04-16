@@ -13,8 +13,11 @@ class SaleItem extends Model
         "sale_id",
         "product_id",
         "quantity",
+        "cost_price",
+        "selling_price",
+        "discount",
+        "total_price",
         "sale_date",
-        "price",
     ];
     public function product(): BelongsTo
     {

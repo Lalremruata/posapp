@@ -16,6 +16,7 @@ class SaleCart extends Model
         "quantity",
         "cost_price",
         "selling_price",
+        "total_price",
         "discount",
     ];
     public function product(){

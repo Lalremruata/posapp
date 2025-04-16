@@ -30,6 +30,8 @@ use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Get;
+use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Placeholder;
 
 class SalesCart extends Page implements HasForms, HasTable, HasActions
 {
@@ -44,20 +46,31 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
     protected static string $view = 'filament.pages.sales';
     public ?array $data = [];
     public $total;
+    public $itemCount = 0;
+    public $selectedProductPrice = null;
 
     public function mount(): void
     {
         $this->form->fill();
         $this->updateTotal();
+        $this->updateItemCount();
     }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->withoutGlobalScopes();
     }
+
     protected function updateTotal()
     {
         $this->total = SaleCart::where('user_id', auth()->user()->id)->sum('selling_price');
     }
+
+    protected function updateItemCount()
+    {
+        $this->itemCount = SaleCart::where('user_id', auth()->user()->id)->count();
+    }
+
     public function form(Form $form): Form
     {
         return $form
@@ -66,23 +79,6 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                     ->searchable()
                     ->autofocus()
                     ->label('Search Product')
-                    // ->relationship(
-                    //     name: 'stock', // The name of the relationship in SalesCart model
-                    //     modifyQueryUsing: fn (Builder $query) => $query
-                    //         ->whereHas('product', function (Builder $query) {
-                    //             $query->whereHas('stocks', function (Builder $query) {
-                    //                 $query->where('store_id', auth()->user()->store_id);
-                    //             });
-                    //         })
-                    //         ->with('product')
-                    //         ->orderBy('product.product_name')
-                    //         ->orderBy('product.product_description')
-                    // )
-                    // ->getOptionLabelFromRecordUsing(fn (Stock $record) => $record->product
-                    //     ? "{$record->product->product_name} ({$record->product->product_description})"
-                    //     : 'Unknown Product'
-                    // )
-                    // ->searchable(['product.product_name', 'product.barcode'])
                     ->getSearchResultsUsing(fn (string $search): array => Stock::where('store_id', auth()->user()->store_id)
                         ->whereHas('product', function ($query) use ($search) {
                             $query->where('product_name', 'like', "%{$search}%")
@@ -93,72 +89,150 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                         ->get()
                         ->pluck('product.product_info', 'product_id')
                         ->toArray()
-                        )
-                    // ->getOptionLabelUsing(fn ($value): ?string => Product::find($value)?->getConcatenatedName())
+                    )
                     ->noSearchResultsMessage('No products found.')
                     ->searchPrompt('Search by name or barcode')
                     ->searchingMessage('Searching products...')
                     ->required()
                     ->native(false)
+                    ->live()
                     ->afterStateUpdated(
-                        function(callable $set,Get $get){
+                        function(callable $set, Get $get){
                             $productId = $get('product_id');
-                            $stockId = Stock::where('id', $productId)
-                                ->first();
-                                if($stockId)
-                                {
+                            $product = Product::find($productId);
+
+                            if($product) {
+                                // Set stock ID
+                                $stockId = Stock::where('product_id', $productId)
+                                    ->where('store_id', auth()->user()->store_id)
+                                    ->first();
+
+                                if($stockId) {
                                     $set('stock_id', $stockId->id);
                                 }
+
+                                // Set the selling price for display
+                                $this->selectedProductPrice = $product->selling_price;
+
+                                // Calculate and set the initial total price
+                                $quantity = $get('quantity') ?: 1;
+                                $discount = $get('discount') ?: 0;
+                                $totalPrice = $product->selling_price * $quantity;
+                                $discountedPrice = $totalPrice - ($totalPrice * ($discount/100));
+
+                                $set('item_total', round($discountedPrice, 2));
+                            } else {
+                                $this->selectedProductPrice = null;
+                                $set('item_total', null);
+                            }
                         }
-                        ),
+                    ),
+
+                Placeholder::make('product_price')
+                    ->label('Unit Price')
+                    ->content(function (Get $get) {
+                        if ($this->selectedProductPrice !== null) {
+                            return '₹ ' . number_format($this->selectedProductPrice, 2);
+                        }
+
+                        return 'Select a product to see price';
+                    }),
+
                 TextInput::make('quantity')
-                    ->label('quantity')
+                    ->label('Quantity')
                     ->numeric()
                     ->default(1)
                     ->required()
-                    ->extraAttributes(['ref' => 'productSelect']),
+                    ->live()
+                    ->extraAttributes(['ref' => 'productSelect'])
+                    ->afterStateUpdated(function(callable $set, Get $get) {
+                        if ($this->selectedProductPrice !== null) {
+                            $quantity = $get('quantity') ?: 1;
+                            $discount = $get('discount') ?: 0;
+                            $totalPrice = $this->selectedProductPrice * $quantity;
+                            $discountedPrice = $totalPrice - ($totalPrice * ($discount/100));
+
+                            $set('item_total', round($discountedPrice, 2));
+                        }
+                    }),
+
                 TextInput::make('discount')
-                ->label('discount')
-                ->default(0)
-                ->numeric(),
+                    ->label('Discount (%)')
+                    ->default(0)
+                    ->numeric()
+                    ->live()
+                    ->afterStateUpdated(function(callable $set, Get $get) {
+                        if ($this->selectedProductPrice !== null) {
+                            $quantity = $get('quantity') ?: 1;
+                            $discount = $get('discount') ?: 0;
+                            $totalPrice = $this->selectedProductPrice * $quantity;
+                            $discountedPrice = $totalPrice - ($totalPrice * ($discount/100));
+
+                            $set('item_total', round($discountedPrice, 2));
+                        }
+                    }),
+
+                Placeholder::make('item_total')
+                    ->label('Item Total')
+                    ->content(function (Get $get) {
+                        $itemTotal = $get('item_total');
+                        if ($itemTotal !== null) {
+                            return '₹ ' . number_format($itemTotal, 2);
+                        }
+
+                        return 'Select a product to see total';
+                    }),
+
                 Hidden::make('stock_id')
-                ->reactive()
-            ])->columns(2)
+                    ->reactive(),
+
+                Hidden::make('item_total')
+                    ->default(0),
+            ])
+            ->columns(2)
             ->statePath('data');
     }
+
     public function table(Table $table): Table
     {
         return $table
-        ->query(SaleCart::query()->where('user_id', auth()->user()->id))
+            ->query(SaleCart::query()->where('user_id', auth()->user()->id))
             ->columns([
-                    TextColumn::make('product.product_name'),
-                    TextColumn::make('product.product_description')
+                TextColumn::make('product.product_name'),
+                TextColumn::make('product.product_description')
                     ->label('description'),
-                    TextColumn::make('quantity'),
-                    TextColumn::make('selling_price')
-                    ->label('Price'),
-                    TextColumn::make('discount')
+                TextColumn::make('quantity'),
+                TextColumn::make('cost_price'),
+                TextColumn::make('selling_price')
+                    ->formatStateUsing(fn ($state) => '₹ ' . number_format($state, 2)),
+                TextColumn::make('total_price')
+                    ->formatStateUsing(fn ($state) => '₹ ' . number_format($state, 2)),
+                TextColumn::make('discount')
                     ->suffix('%'),
             ])
             ->actions([
                 DeleteAction::make()
-                ->iconButton()
-                ->icon('heroicon-o-x-circle')
-                ->after(function (){
-                    $this->updateTotal();
-                }),
+                    ->iconButton()
+                    ->icon('heroicon-o-x-circle')
+                    ->after(function (){
+                        $this->updateTotal();
+                        $this->updateItemCount();
+                    }),
             ]);
     }
+
     public function save(): void
     {
         try {
             $data = $this->form->getState();
             $product = Product::find($data['product_id']);
-            $cartItem = SaleCart::where('stock_id', $data['stock_id'])->first();
+            $cartItem = SaleCart::where('stock_id', $data['stock_id'])
+                ->where('user_id', auth()->user()->id)
+                ->first();
             $totalPrice = $product->selling_price * $data['quantity'];
-            if(!$cartItem)
-            {
+            $discountedPrice = $totalPrice - ($totalPrice * ($data['discount']/100));
 
+            if(!$cartItem) {
                 $newData = [
                     'user_id'=> auth()->user()->id,
                     'product_id' => $product->id,
@@ -166,31 +240,29 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                     'stock_id' => $data['stock_id'],
                     'quantity'  => $data['quantity'],
                     'cost_price'=>$product->cost_price,
-                    'selling_price' => $totalPrice - ($totalPrice * ($data['discount']/100)),
-                    'discount' =>$data['discount'],
+                    'selling_price' => $product->selling_price,
+                    'total_price' => $discountedPrice,
+                    'discount' => $data['discount'],
                 ];
                 $data += $newData;
                 SaleCart::create($data);
-            }
-            else{
-                // $stock=Stock::where('id', $data['stock_id'])->first();
-                // $user_id= auth()->user()->id;
-                // $product_id => $product->id,
-                // 'store_id' => auth()->user()->store_id,
-                // 'stock_id' => $data['stock_id'],
+            } else {
                 $cartItem->quantity += $data['quantity'];
-                // 'cost_price'=>$product->cost_price,
-                $cartItem->selling_price += $totalPrice - ($totalPrice * ($data['discount']/100));
+                $cartItem->selling_price += $discountedPrice;
                 $cartItem->discount = $data['discount'];
                 $cartItem->update();
             }
+
             $this->updateTotal();
+            $this->updateItemCount();
+            $this->selectedProductPrice = null;
             $this->form->fill();
             $this->dispatch('formSaved');
         } catch (Halt $exception) {
             //throw $th;
         }
     }
+
     protected function getFormActions(): array
     {
         return [
@@ -201,95 +273,112 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                 ->icon('heroicon-o-shopping-cart'),
         ];
     }
+
     public function checkoutAction(): Action
     {
-           return Action::make('checkout')
-           ->button()
-           ->icon('heroicon-o-bolt')
-           ->color('warning')
-           ->action(function (array $data) {
-            // $totalAmount = SaleCart::where('user_id', auth()->user()->id)->sum('selling_price');
+        return Action::make('checkout')
+            ->button()
+            ->icon('heroicon-o-bolt')
+            ->color('warning')
+            ->action(function (array $data) {
+                if($data['name'])
+                {
+                    $customer = new Customer;
+                    $customer->name = $data['name'];
+                    $customer->phone = $data['phone'];
+                    $customer->email = $data['email'];
+                    $customer->save();
+                    $customer_id = Customer::latest()->pluck('id')->first();
+                }
+                else{
+                    $customer_id = null;
+                }
+                $cartItems = SaleCart::where('store_id',auth()->user()->store_id)
+                    ->where('user_id', auth()->user()->id)
+                    ->get();
 
-            if($data['name'])
-            {
-                $customer = new Customer;
-                $customer->name = $data['name'];
-                $customer->phone = $data['phone'];
-                $customer->email = $data['email'];
-                $customer->save();
-                $customer_id = Customer::latest()->pluck('id')->first();
-            }
-            else{
-                $customer_id = null;
-            }
-            $cartItems = SaleCart::where('store_id',auth()->user()->store_id)->get();
-            Sale::create([
-                'store_id' => auth()->user()->store_id,
-                'user_id' => auth()->user()->id,
-                'stock_id' => $cartItems->first()->stock_id,
-                'payment_method' => $data['payment_method'],
-                'sale_date' => Carbon::now(),
-                'customer_id' => $customer_id,
-                'total_amount' => $this->total,
-                'quantity' => $cartItems->sum('quantity'),
-                'transaction_number' => $data['transaction_number'],
-            ]);
-
-            $saleId = Sale::latest()->pluck('id')->first();
-            foreach ($cartItems as $item) {
-                $stock = Stock::where('id', $item->stock_id)
-                ->first();
-                $stock->quantity -= $item->quantity;
-                $stock->update();
-                SaleItem::create([
-                    'sale_id' => $saleId,
-                    'product_id' => $item->product_id, //Product Id
-                    'quantity' => $item->quantity,
-                    'price' => $item->selling_price,
-                    'sale_date' => Carbon::now(),
-                ]);
-                $item->delete();
-            }
-            $this->updateTotal();
-        })
-            ->steps([
-                Step::make('Payment')
-                ->schema([
-                    Section::make([
-                        TextInput::make('received_amount')
-                        ->autofocus(true)
-                            ->prefix('₹')
-                            ->numeric()
-                            ->required()
-                            ->default(function(){
-                                return $this->total;
-                            }),
-                            Select::make('payment_method')
-                            ->options([
-                                "cash" => "cash",
-                                "upi" => "upi",
-                                "bank transfer"=>"bank transfer",
-                                "cheque" => "cheque"
-                            ])
-                            ->required(),
-                            TextInput::make('transaction_number')
-                    ])
-                            ]),
-                Step::make('Customer Details')
-                ->schema([
-                    Section::make([
-                        TextInput::make('name')
-                            ->autofocus()
-                            ->label('customer name'),
-                        TextInput::make('phone')
-                            ->label('Contact')
-                            ->numeric(),
-                        TextInput::make('email')
-                            ->label('email')
-                            ->email(),
-                    ])
-                ])
+                if ($cartItems->count() > 0) {
+                    Sale::create([
+                        'store_id' => auth()->user()->store_id,
+                        'user_id' => auth()->user()->id,
+                        'stock_id' => $cartItems->first()->stock_id,
+                        'payment_method' => $data['payment_method'],
+                        'sale_date' => Carbon::now(),
+                        'customer_id' => $customer_id,
+                        'total_amount' => $this->total,
+                        'quantity' => $cartItems->sum('quantity'),
+                        'transaction_number' => $data['transaction_number'],
                     ]);
 
+                    $saleId = Sale::latest()->pluck('id')->first();
+                    foreach ($cartItems as $item) {
+                        $stock = Stock::where('id', $item->stock_id)
+                            ->first();
+                        $stock->quantity -= $item->quantity;
+                        $stock->update();
+                        SaleItem::create([
+                            'sale_id' => $saleId,
+                            'product_id' => $item->product_id, //Product Id
+                            'quantity' => $item->quantity,
+                            'cost_price' => $item->cost_price,
+                            'selling_price' => $item->selling_price,
+                            'discount' => $item->discount,
+                            'total_price' => $item->total_price,
+                            'sale_date' => Carbon::now(),
+                        ]);
+                        $item->delete();
+                    }
+                    $this->updateTotal();
+                    $this->updateItemCount();
+                    $this->selectedProductPrice = null;
+                }
+            })
+            ->steps([
+                Step::make('Payment')
+                    ->schema([
+                        Section::make([
+                            TextInput::make('received_amount')
+                                ->autofocus(true)
+                                ->prefix('₹')
+                                ->numeric()
+                                ->required()
+                                ->default(function(){
+                                    return $this->total;
+                                }),
+                            Select::make('payment_method')
+                                ->options([
+                                    "cash" => "cash",
+                                    "upi" => "upi",
+                                    "bank transfer"=>"bank transfer",
+                                    "cheque" => "cheque"
+                                ])
+                                ->required(),
+                            TextInput::make('transaction_number')
+                        ])
+                    ]),
+                Step::make('Customer Details')
+                    ->schema([
+                        Section::make([
+                            TextInput::make('name')
+                                ->autofocus()
+                                ->label('customer name'),
+                            TextInput::make('phone')
+                                ->label('Contact')
+                                ->numeric(),
+                            TextInput::make('email')
+                                ->label('email')
+                                ->email(),
+                        ])
+                    ])
+            ]);
+    }
+
+    public function getCheckoutProperty()
+    {
+        if ($this->itemCount > 0) {
+            return $this->checkoutAction();
+        }
+
+        return new HtmlString('');
     }
 }

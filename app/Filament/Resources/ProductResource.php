@@ -33,6 +33,23 @@ class ProductResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make()
+                    ->columns([
+                        'sm' => 2,
+                        'xl' => 2,
+                        '2xl' => 2,
+                    ])
+                    ->schema([
+                        Forms\Components\Select::make('category_id')
+                            ->autofocus()
+                            ->label('Category')
+                            ->options(ProductCategory::all()->pluck('category_name', 'id'))
+                            ->searchable()
+                            ->required(),
+                        Forms\Components\Select::make('supplier_id')
+                            ->relationship('supplier', 'supplier_name')
+                            ->searchable(),
+                    ]),
+                Forms\Components\Section::make()
                 ->columns([
                     'sm' => 2,
                     'xl' => 2,
@@ -40,25 +57,17 @@ class ProductResource extends Resource
                 ])
                 ->schema([
                 Forms\Components\TextInput::make('product_name')
-                    ->autofocus()
                     ->required()
                     ->maxLength(100),
                 Forms\Components\TextInput::make('product_description')
                     ->required()
                     ->maxLength(200),
-                Forms\Components\Select::make('category_id')
-                    ->label('Category')
-                    ->options(ProductCategory::all()->pluck('category_name', 'id'))
-                    ->searchable(),
+                    Forms\Components\TextInput::make('cost_price')
+                        ->required()
+                        ->numeric(),
                 Forms\Components\TextInput::make('selling_price')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('cost_price')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\Select::make('supplier_id')
-                    ->relationship('supplier', 'supplier_name')
-                    ->searchable(),
                 BarcodeGenerator::make('barcode')
                 ->helperText('Click the button to generate barcode.'),
                 // Forms\Components\TextInput::make('barcode')

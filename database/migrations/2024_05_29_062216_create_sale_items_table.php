@@ -16,7 +16,10 @@ return new class extends Migration
             $table->foreignId('sale_id')->constrained('sales')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products');
             $table->integer('quantity');
-            $table->decimal('price', 10, 2);
+            $table->decimal('cost_price', 10, 2);
+            $table->decimal('selling_price', 10, 2);
+            $table->integer('discount')->unsigned()->nullable();
+            $table->decimal('total_price', 10, 2);
             $table->dateTime('sale_date');
             $table->timestamps();
         });

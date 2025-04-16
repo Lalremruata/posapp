@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('quantity')->unsigned();
             $table->integer('cost_price')->unsigned();
             $table->integer('selling_price')->unsigned();
+            $table->integer('total_price')->unsigned();
             $table->integer('discount')->unsigned()->nullable();
             $table->timestamps();
         });
