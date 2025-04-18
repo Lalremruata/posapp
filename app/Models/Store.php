@@ -11,7 +11,8 @@ class Store extends Model
     protected $fillable = [
         'store_name',
         'store_type',
-        'location'
+        'location',
+        'phone_number',
     ];
 
     public function users()

@@ -27,4 +27,18 @@ class SaleItem extends Model
     {
         return $this->belongsTo(Sale::class);
     }
+    // Calculate profit for a single item
+    public function getProfitAttribute()
+    {
+        return $this->selling_price * $this->quantity - $this->cost_price * $this->quantity;
+    }
+
+// Calculate margin percentage
+    public function getMarginAttribute()
+    {
+        $revenue = $this->selling_price * $this->quantity;
+        return $revenue > 0 ? ($this->profit / $revenue) * 100 : 0;
+    }
+
+
 }

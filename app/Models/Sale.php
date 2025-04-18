@@ -11,7 +11,7 @@ class Sale extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'store_id','user_id', 'stock_id', 'payment_method', 'sale_date', 'customer_id', 'total_amount'
+        'store_id','user_id', 'stock_id', 'payment_method', 'sale_date', 'customer_id', 'total_amount', 'invoice_number'
     ];
     public function user(): BelongsTo{
         return $this->belongsTo(User::class);
@@ -19,12 +19,20 @@ class Sale extends Model
     public function customer(): BelongsTo{
         return $this->belongsTo(Customer::class);
     }
-    public function saleItems(): HasMany
+    public function items(): HasMany
     {
         return $this->hasMany(SaleItem::class);
     }
     public function store()
     {
         return $this->belongsTo(Store::class);
+    }
+
+// Calculate total profit for the entire sale
+    public function getTotalProfitAttribute()
+    {
+        return $this->items->sum(function ($item) {
+            return $item->profit;
+        });
     }
 }

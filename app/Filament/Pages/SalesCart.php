@@ -63,7 +63,7 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
 
     protected function updateTotal()
     {
-        $this->total = SaleCart::where('user_id', auth()->user()->id)->sum('selling_price');
+        $this->total = SaleCart::where('user_id', auth()->user()->id)->sum('total_price');
     }
 
     protected function updateItemCount()
@@ -297,6 +297,10 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                     ->where('user_id', auth()->user()->id)
                     ->get();
 
+                //Sales id + 1 for invoice number
+                $saleId=Sale::latest()->pluck('id')->first();
+                $date = Carbon::now();
+                $formattedYear = $date->format('y');
                 if ($cartItems->count() > 0) {
                     Sale::create([
                         'store_id' => auth()->user()->store_id,
@@ -306,6 +310,7 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                         'sale_date' => Carbon::now(),
                         'customer_id' => $customer_id,
                         'total_amount' => $this->total,
+                        'invoice_number' => ($saleId + 1).'/'.$formattedYear,
                         'quantity' => $cartItems->sum('quantity'),
                         'transaction_number' => $data['transaction_number'],
                     ]);

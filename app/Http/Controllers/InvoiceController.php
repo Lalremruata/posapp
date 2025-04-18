@@ -16,12 +16,12 @@ class InvoiceController extends Controller
     public function downloadInvoice(Request $request, Sale $sale)
     {
 
-        $date = Carbon::now();
-        $formattedYear = $date->format('y');
+//        $date = Carbon::now();
+//        $formattedYear = $date->format('y');
         $salesItem = SaleItem::where('sale_id', $sale->id)->get();
         $client = new Party([
             'name'          => $sale->store->store_name,
-            'phone'         => '0389-2345676',
+            'phone'         => $sale->store->phone_number,
             'custom_fields' => [
                 'Address'        => $sale->store->location,
             ],
@@ -30,7 +30,7 @@ class InvoiceController extends Controller
             'name'          => optional($sale->customer)->name,
             'phone'       => optional($sale->customer)->phone,
             'custom_fields' => [
-                'Bill number' =>  $sale->id.'/'.$formattedYear,
+                'Bill number' =>  $sale->invoice_number,
             ],
         ]);
         $notes = [
@@ -43,9 +43,9 @@ class InvoiceController extends Controller
         $salesitem = $salesItem->map(function ($salesItem) {
             return Invoice::makeItem($salesItem->product->product_name)
                 ->title($salesItem->product->product_name.' '.$salesItem->product->product_description)
-                ->pricePerUnit($salesItem->price)
+                ->pricePerUnit($salesItem->selling_price)
                 ->quantity($salesItem->quantity)
-                ->subTotalPrice($salesItem->price);
+                ->subTotalPrice($salesItem->total_price);
         })->toArray();
 
         $invoice = Invoice::make('receipt')
@@ -59,7 +59,7 @@ class InvoiceController extends Controller
             ->currencyFormat('{SYMBOL}{VALUE}')
             ->currencyThousandsSeparator(',')
             ->addItems($salesitem)
-            ->series($formattedYear)
+//            ->series($formattedYear)
             ->sequence($sale->id)
             ->date(Carbon::parse($sale->sale_date))
             ->delimiter('/')

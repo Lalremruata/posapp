@@ -46,6 +46,10 @@ class SaleResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('Sl No')
+                    ->rowIndex(),
+                Tables\Columns\TextColumn::make('invoice_number')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('store.store_name')
                     ->numeric()
                     ->sortable(),

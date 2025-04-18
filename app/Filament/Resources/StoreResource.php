@@ -36,6 +36,8 @@ class StoreResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('location')
                     ->maxLength(255),
+                Forms\Components\TextInput::make('phone_number')
+                    ->maxLength(255),
             ]);
     }
 
@@ -48,6 +50,8 @@ class StoreResource extends Resource
                 Tables\Columns\TextColumn::make('store_type')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('location')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('phone_number')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
