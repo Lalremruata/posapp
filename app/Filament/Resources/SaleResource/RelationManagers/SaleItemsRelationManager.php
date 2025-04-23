@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -33,9 +34,12 @@ class SaleItemsRelationManager extends RelationManager
                     ->rowIndex(),
                 Tables\Columns\TextColumn::make('product.product_name'),
                 Tables\Columns\TextColumn::make('quantity'),
-                Tables\Columns\TextColumn::make('cost_price'),
-                Tables\Columns\TextColumn::make('selling_price'),
-                Tables\Columns\TextColumn::make('total_price'),
+                Tables\Columns\TextColumn::make('cost_price')
+                ->summarize(Sum::make()),
+                Tables\Columns\TextColumn::make('selling_price')
+                ->summarize(Sum::make()),
+                Tables\Columns\TextColumn::make('total_price')
+                ->summarize(Sum::make()),
             ])
             ->filters([
                 //

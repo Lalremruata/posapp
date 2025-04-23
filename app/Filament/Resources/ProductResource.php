@@ -108,7 +108,7 @@ class ProductResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('product_description')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('category_id')
+                Tables\Columns\TextColumn::make('category.category_name')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('selling_price')

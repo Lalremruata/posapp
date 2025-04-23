@@ -12,11 +12,14 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Livewire\Component as Livewire;
+use Illuminate\Database\Query\Builder As QueryBuilder;
 
 class StockResource extends Resource
 {
@@ -126,6 +129,34 @@ class StockResource extends Resource
                 Tables\Columns\TextColumn::make('quantity')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('product.cost_price')
+                    ->label('Cost Price')
+                    ->numeric()
+                    ->sortable()
+                    ->summarize(
+                        Summarizer::make()
+                            ->numeric()
+//                            ->label('Total Cost Price')
+                            ->using(function (Table $table): float {
+                                return $table->getRecords()->sum(function ($record) {
+                                    return $record->quantity * ($record->product->cost_price ?? 0);
+                                });
+                            })
+                        ),
+                Tables\Columns\TextColumn::make('product.selling_price')
+                    ->label('Selling Price')
+                    ->numeric()
+                    ->sortable()
+                    ->summarize(
+                        Summarizer::make()
+                            ->numeric()
+//                            ->label('Total Selling Price')
+                            ->using(function (Table $table): float {
+                                return $table->getRecords()->sum(function ($record) {
+                                    return $record->quantity * ($record->product->selling_price ?? 0);
+                                });
+                            })
+                    ),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

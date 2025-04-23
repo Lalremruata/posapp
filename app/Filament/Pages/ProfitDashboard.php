@@ -28,7 +28,7 @@ class ProfitDashboard extends Dashboard
     {
         return [
             'md' => 3,
-            'xl' => 3,
+            'xl' => 4,
         ];
     }
     protected function getHeaderActions(): array

@@ -3,7 +3,7 @@
 @config 'tailwind.config.js';
 
 .fi-simple-layout{
-    @apply bg-gradient-to-r from-violet-600 to-indigo-600;
+    @apply bg-gradient-to-r from-blue-950 to-indigo-400;
 }
 
 .fi-simple-main{
