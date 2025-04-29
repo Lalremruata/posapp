@@ -17,10 +17,14 @@ class StoreSeeder extends Seeder
             [
                 'store_name'=>'Main Store',
                 'store_type' => 'main',
+                'location' => '',
+                'phone_number' => '',
             ],
             [
                 'store_name'=>'Branch Store',
                 'store_type' => 'branch',
+                'location' => '',
+                'phone_number' => '',
             ],
 
         ];
