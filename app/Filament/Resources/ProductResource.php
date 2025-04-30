@@ -64,12 +64,6 @@ class ProductResource extends Resource
                 Forms\Components\TextInput::make('product_description')
                     ->required()
                     ->maxLength(200),
-                    Forms\Components\TextInput::make('cost_price')
-                        ->required()
-                        ->numeric(),
-                Forms\Components\TextInput::make('selling_price')
-                    ->required()
-                    ->numeric(),
                 BarcodeGenerator::make('barcode')
                 ->helperText('Click the button to generate barcode.'),
                 // Forms\Components\TextInput::make('barcode')

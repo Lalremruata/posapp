@@ -142,9 +142,9 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                 TextInput::make('quantity')
                     ->label('Quantity')
                     ->numeric()
-                    ->default(1)
                     ->required()
                     ->live()
+                    ->reactive()
                     ->extraAttributes(['ref' => 'productSelect'])
                     ->afterStateUpdated(function(callable $set, Get $get) {
                         if ($this->selectedProductPrice !== null) {
@@ -155,7 +155,44 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
 
                             $set('item_total', round($discountedPrice, 2));
                         }
-                    }),
+                    })
+                    ->minValue(1)
+                    ->maxValue(function (Get $get) {
+                        $stockId = $get('stock_id');
+                        if ($stockId) {
+                            $stockQuantity=Stock::where('id',$stockId)
+                                ->where('store_id',auth()->user()->store_id)
+                                ->pluck('quantity','id')->first();
+                            $salesCartQuantity=SaleCart::where('stock_id',$stockId)
+                                ->where('store_id', auth()->user()->store_id)
+                                ->where('user_id', auth()->user()->id)
+                                ->pluck('quantity')->first();
+                            $result = $stockQuantity-$salesCartQuantity;
+                            return $result;
+                        }
+                    })
+                    ->hint(function(Get $get){
+                        $stockId = $get('stock_id');
+                        $barcode = $get('barcode');
+                        if ($stockId) {
+                            $stockQuantity=Stock::where('id',$stockId)
+                                ->where('store_id',auth()->user()->store_id)
+                                ->pluck('quantity','id')->first();
+                            $salesCartQuantity=SaleCart::where('stock_id',$stockId)
+                                ->where('store_id', auth()->user()->store_id)
+                                ->where('user_id', auth()->user()->id)
+                                ->pluck('quantity')->first();
+                            $result = $stockQuantity-$salesCartQuantity;
+                            if($result)
+                                return 'qty. available: '.$result;
+                            else
+                                return 'stock unavailable';
+                        }
+                        // elseif()
+                        return null;
+                    })
+                    ->hintColor('danger')
+                    ->required(),
 
                 TextInput::make('discount')
                     ->label('Discount (%)')

@@ -70,13 +70,22 @@ class StockResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('category_id')
                             ->label('Select Category')
-                           ->options(ProductCategory::pluck('category_name','id'))
+                            ->options(ProductCategory::pluck('category_name','id'))
                             ->required()
                             ->live()
                             ->afterStateUpdated(function (Livewire $livewire, Forms\Set $set) {
                                 $set('product_id', null);
                             })
-                            ->reactive(),
+                            ->reactive()
+                            ->afterStateHydrated(function (Forms\Set $set, $state, ?Model $record) {
+                                if ($record && !$state) {
+                                    // If we're editing a record and category_id isn't set
+                                    $product = Product::find($record->product_id);
+                                    if ($product) {
+                                        $set('category_id', $product->category_id);
+                                    }
+                                }
+                            }),
                         Forms\Components\Select::make('product_id')
                             ->label('Select Product')
                             ->options(function (Forms\Get $get) {
@@ -101,14 +110,37 @@ class StockResource extends Resource
 
                                 return "{$product->product_name} ({$product->product_description})";
                             })
+                            ->getSearchResultsUsing(function (string $search, Forms\Get $get) {
+                                $categoryId = $get('category_id');
+
+                                if (!$categoryId) {
+                                    return [];
+                                }
+
+                                return Product::where('category_id', $categoryId)
+                                    ->where(function ($query) use ($search) {
+                                        $query->where('product_name', 'like', "%{$search}%")
+                                            ->orWhere('barcode', 'like', "%{$search}%");
+                                    })
+                                    ->orderBy('product_name')
+                                    ->limit(50)
+                                    ->get()
+                                    ->mapWithKeys(fn (Product $product) => [$product->id => "{$product->product_name} ({$product->product_description})" . ($product->barcode ? " - {$product->barcode}" : "")]);
+                            })
                             ->reactive()
                             ->searchable()
                             ->placeholder(fn (Forms\Get $get): string =>
-                            empty($get('category_id')) ? 'First select category' : 'Select a product'
+                            empty($get('category_id')) ? 'First select category' : 'Search by name or barcode'
                             )
                             ->required()
                             ->native(false)
                             ->disabled(fn (Forms\Get $get): bool => !$get('category_id')),
+                        Forms\Components\TextInput::make('cost_price')
+                            ->required()
+                            ->numeric(),
+                        Forms\Components\TextInput::make('selling_price')
+                            ->required()
+                            ->numeric(),
                         Forms\Components\TextInput::make('quantity')
                             ->required()
                             ->numeric(),
