@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Imports\ProductImporter;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Forms\Components\BarcodeGenerator;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Forms;
 use Filament\Forms\Components\ViewField;
 use Filament\Forms\Form;
@@ -111,12 +113,12 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('category.category_name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('selling_price')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('cost_price')
-                    ->numeric()
-                    ->sortable(),
+//                Tables\Columns\TextColumn::make('selling_price')
+//                    ->numeric()
+//                    ->sortable(),
+//                Tables\Columns\TextColumn::make('cost_price')
+//                    ->numeric()
+//                    ->sortable(),
                 Tables\Columns\TextColumn::make('barcode')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('supplier.supplier_name')
@@ -141,6 +143,10 @@ class ProductResource extends Resource
                    return static::getUrl('barCode',['record'=>$record]);
 
                 }),
+            ])
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(ProductImporter::class)
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

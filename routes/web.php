@@ -7,5 +7,5 @@ use Illuminate\Support\Facades\Route;
 // Route::redirect('/', '/admin/login');
 Route::get('{sale}/receipt/download',[InvoiceController::class, 'downloadInvoice'])
 ->name('sale.receipt.download');
-Route::get('{product}/barcode',[BarcodeController::class, 'show'])
-->name('barcode.show');
+//Route::get('{product}/barcode',[BarcodeController::class, 'show'])
+//->name('barcode.show');

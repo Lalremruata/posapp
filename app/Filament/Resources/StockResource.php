@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Imports\ProductImporter;
+use App\Filament\Imports\StockImporter;
 use App\Filament\Resources\StockResource\Pages;
 use App\Filament\Resources\StockResource\RelationManagers;
 use App\Models\Product;
@@ -12,6 +14,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Table;
@@ -129,33 +132,23 @@ class StockResource extends Resource
                 Tables\Columns\TextColumn::make('quantity')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('product.cost_price')
+                Tables\Columns\TextColumn::make('cost_price')
                     ->label('Cost Price')
                     ->numeric()
                     ->sortable()
-                    ->summarize(
-                        Summarizer::make()
-                            ->numeric()
-//                            ->label('Total Cost Price')
-                            ->using(function (Table $table): float {
-                                return $table->getRecords()->sum(function ($record) {
-                                    return $record->quantity * ($record->product->cost_price ?? 0);
-                                });
-                            })
-                        ),
-                Tables\Columns\TextColumn::make('product.selling_price')
+                    ->summarize(Tables\Columns\Summarizers\Summarizer::make()
+                        ->label('Total')
+                        ->numeric()
+                        ->using(fn(\Illuminate\Database\Query\Builder $query): float => $query->get()->sum(fn($row) => $row->cost_price * $row->quantity))
+                    ),
+                Tables\Columns\TextColumn::make('selling_price')
                     ->label('Selling Price')
                     ->numeric()
                     ->sortable()
-                    ->summarize(
-                        Summarizer::make()
-                            ->numeric()
-//                            ->label('Total Selling Price')
-                            ->using(function (Table $table): float {
-                                return $table->getRecords()->sum(function ($record) {
-                                    return $record->quantity * ($record->product->selling_price ?? 0);
-                                });
-                            })
+                    ->summarize(Tables\Columns\Summarizers\Summarizer::make()
+                        ->label('Total')
+                        ->numeric()
+                        ->using(fn(\Illuminate\Database\Query\Builder $query): float => $query->get()->sum(fn($row) => $row->selling_price * $row->quantity))
                     ),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -172,6 +165,10 @@ class StockResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+            ])
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(StockImporter::class)
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

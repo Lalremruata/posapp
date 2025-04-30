@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('product_name', 100);
             $table->string('product_description', 200)->nullable();
             $table->foreignId('category_id')->nullable()->constrained('product_categories');
-            $table->decimal('selling_price', 10, 2);
-            $table->decimal('cost_price', 10, 2);
+//            $table->decimal('selling_price', 10, 2);
+//            $table->decimal('cost_price', 10, 2);
             $table->string('barcode', 50)->unique()->nullable();
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers');
             $table->timestamps();

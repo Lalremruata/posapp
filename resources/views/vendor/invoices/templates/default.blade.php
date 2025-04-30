@@ -139,7 +139,9 @@
                 <tr>
                     <td class="border-0 pl-0" width="70%">
                         <h4 class="text-uppercase">
-                            <strong>{{ $invoice->name }}</strong>
+{{--                            <strong>{{ $invoice->name }}ffgsdfgsd</strong>--}}
+                            <strong>Friends <br>
+                            Wholesale & Retail</strong>
                         </h4>
                     </td>
                     <td class="border-0 pl-0">
@@ -180,6 +182,7 @@
                         @if($invoice->seller->address)
                             <p class="seller-address">
                                 {{ __('invoices::invoice.address') }}: {{ $invoice->seller->address }}
+                                Zarkawt
                             </p>
                         @endif
 

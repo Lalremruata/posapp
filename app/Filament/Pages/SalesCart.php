@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Credit;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
@@ -112,12 +113,12 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                                 }
 
                                 // Set the selling price for display
-                                $this->selectedProductPrice = $product->selling_price;
+                                $this->selectedProductPrice = $stockId->selling_price;
 
                                 // Calculate and set the initial total price
                                 $quantity = $get('quantity') ?: 1;
                                 $discount = $get('discount') ?: 0;
-                                $totalPrice = $product->selling_price * $quantity;
+                                $totalPrice = $stockId->selling_price * $quantity;
                                 $discountedPrice = $totalPrice - ($totalPrice * ($discount/100));
 
                                 $set('item_total', round($discountedPrice, 2));
@@ -225,22 +226,22 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
     {
         try {
             $data = $this->form->getState();
-            $product = Product::find($data['product_id']);
+            $stock = Stock::find($data['product_id']);
             $cartItem = SaleCart::where('stock_id', $data['stock_id'])
                 ->where('user_id', auth()->user()->id)
                 ->first();
-            $totalPrice = $product->selling_price * $data['quantity'];
+            $totalPrice = $stock->selling_price * $data['quantity'];
             $discountedPrice = $totalPrice - ($totalPrice * ($data['discount']/100));
 
             if(!$cartItem) {
                 $newData = [
                     'user_id'=> auth()->user()->id,
-                    'product_id' => $product->id,
+                    'product_id' => $stock->product_id,
                     'store_id' => auth()->user()->store_id,
                     'stock_id' => $data['stock_id'],
                     'quantity'  => $data['quantity'],
-                    'cost_price'=>$product->cost_price,
-                    'selling_price' => $product->selling_price,
+                    'cost_price'=>$stock->cost_price,
+                    'selling_price' => $stock->selling_price,
                     'total_price' => $discountedPrice,
                     'discount' => $data['discount'],
                 ];
@@ -281,24 +282,41 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
             ->icon('heroicon-o-bolt')
             ->color('warning')
             ->action(function (array $data) {
-                if($data['name'])
-                {
+                if ($data['customer_id']) {
+                    // Using existing customer
+                    $customer_id = $data['customer_id'];
+                } elseif ($data['name']) {
+                    // Creating new customer
                     $customer = new Customer;
                     $customer->name = $data['name'];
                     $customer->phone = $data['phone'];
                     $customer->email = $data['email'];
                     $customer->save();
                     $customer_id = Customer::latest()->pluck('id')->first();
-                }
-                else{
+                } else {
                     $customer_id = null;
                 }
-                $cartItems = SaleCart::where('store_id',auth()->user()->store_id)
+
+                //Check for Received amount input
+                if($data['received_amount'] < $this->total && $customer_id !== null) {
+                    $totalAmount = $data['received_amount'];
+                    Credit::create([
+                        'customer_id' => $customer_id,
+                        'amount' => $totalAmount,
+                        'type' => 'credit',
+                        'balance' => $totalAmount,
+                    ]);
+                }
+                else{
+                    $totalAmount = $this->total;
+                }
+
+                $cartItems = SaleCart::where('store_id', auth()->user()->store_id)
                     ->where('user_id', auth()->user()->id)
                     ->get();
 
                 //Sales id + 1 for invoice number
-                $saleId=Sale::latest()->pluck('id')->first();
+                $saleId = Sale::latest()->pluck('id')->first();
                 $date = Carbon::now();
                 $formattedYear = $date->format('y');
                 if ($cartItems->count() > 0) {
@@ -309,7 +327,7 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                         'payment_method' => $data['payment_method'],
                         'sale_date' => Carbon::now(),
                         'customer_id' => $customer_id,
-                        'total_amount' => $this->total,
+                        'total_amount' => $totalAmount,
                         'invoice_number' => ($saleId + 1).'/'.$formattedYear,
                         'quantity' => $cartItems->sum('quantity'),
                         'transaction_number' => $data['transaction_number'],
@@ -328,7 +346,7 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                             'cost_price' => $item->cost_price,
                             'selling_price' => $item->selling_price,
                             'discount' => $item->discount,
-                            'total_price' => $item->total_price,
+                            'total_price' => $totalAmount,
                             'sale_date' => Carbon::now(),
                         ]);
                         $item->delete();
@@ -364,14 +382,35 @@ class SalesCart extends Page implements HasForms, HasTable, HasActions
                 Step::make('Customer Details')
                     ->schema([
                         Section::make([
+                            Select::make('customer_id')
+                                ->label('Select Existing Customer')
+                                ->searchable()
+                                ->options(function () {
+                                    return Customer::query()
+                                        ->pluck('name', 'id');
+                                })
+                                ->preload()
+                                ->live()
+                                ->afterStateUpdated(function ($state, $set) {
+                                    if ($state) {
+                                        $customer = Customer::find($state);
+                                        $set('name', $customer->name);
+                                        $set('phone', $customer->phone);
+                                        $set('email', $customer->email);
+                                    } else {
+                                        $set('name', null);
+                                        $set('phone', null);
+                                        $set('email', null);
+                                    }
+                                }),
                             TextInput::make('name')
-                                ->autofocus()
-                                ->label('customer name'),
+                                ->label('Customer Name (New)')
+                                ->helperText('Fill these fields only if creating a new customer'),
                             TextInput::make('phone')
                                 ->label('Contact')
                                 ->numeric(),
                             TextInput::make('email')
-                                ->label('email')
+                                ->label('Email')
                                 ->email(),
                         ])
                     ])

@@ -14,9 +14,9 @@ class Product extends Model
         'product_name',
         'product_description',
         'category_id',
-        'selling_price',
-        'cost_price',
-        'quantity_in_stock',
+//        'selling_price',
+//        'cost_price',
+//        'quantity_in_stock',
         'barcode',
         'supplier_id'
     ];

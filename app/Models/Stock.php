@@ -14,6 +14,8 @@ class Stock extends Model
         'store_id',
         'product_id',
         'quantity',
+        'cost_price',
+        'selling_price',
     ];
     public function store(): BelongsTo
     {

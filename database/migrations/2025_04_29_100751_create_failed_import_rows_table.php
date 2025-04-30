@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('stocks', function (Blueprint $table) {
+        Schema::create('failed_import_rows', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('store_id')->constrained('stores')->onDelete('cascade');
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->integer('quantity');
-            $table->decimal('cost_price', 10, 2);
-            $table->decimal('selling_price', 10, 2);
+            $table->json('data');
+            $table->foreignId('import_id')->constrained()->cascadeOnDelete();
+            $table->text('validation_error')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('stocks');
+        Schema::dropIfExists('failed_import_rows');
     }
 };

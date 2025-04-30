@@ -73,16 +73,17 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()
                      ->label('Sales'),
                 NavigationGroup::make()
-                     ->label('Manage Products'),
+                    ->label('Manage Customers')
+                    ->collapsed(true),
                 NavigationGroup::make()
                      ->label('Manage Stocks')
                      ->collapsed(true),
                 NavigationGroup::make()
-                     ->label('Manage Customers')
-                     ->collapsed(true),
+                    ->label('Manage Products'),
                 NavigationGroup::make()
                      ->label('Settings')
                      ->collapsed(true),
-            ]);
+            ])
+            ->databaseNotifications();
     }
 }

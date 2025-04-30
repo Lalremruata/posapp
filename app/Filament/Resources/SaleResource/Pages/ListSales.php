@@ -5,7 +5,11 @@ namespace App\Filament\Resources\SaleResource\Pages;
 use App\Filament\Resources\SaleResource;
 use App\Models\Store;
 use Filament\Actions;
+use Filament\Actions\StaticAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Enums\Alignment;
+use Filament\Support\Enums\MaxWidth;
+use Illuminate\Contracts\View\View;
 
 class ListSales extends ListRecords
 {
@@ -15,6 +19,11 @@ class ListSales extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+//            Actions\CreateAction::make(),
+//            Actions\Action::make('View All Sales')
+//                ->icon('heroicon-o-arrow-right')
+//            ->url(SaleResource::getUrl('all-sales'))
+                // ->iconButton()
         ];
     }
     public function getTabs(): array
@@ -35,4 +44,5 @@ class ListSales extends ListRecords
         }
 
     }
+
 }

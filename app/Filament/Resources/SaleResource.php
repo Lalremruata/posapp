@@ -2,15 +2,21 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\SaleExporter;
 use App\Filament\Resources\SaleResource\Pages;
 use App\Filament\Resources\SaleResource\RelationManagers;
 use App\Models\Sale;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -57,7 +63,7 @@ class SaleResource extends Resource
                 Tables\Columns\TextColumn::make('payment_method')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('sale_date')
-                    ->dateTime()
+                    ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('customer.name')
                     ->numeric()
@@ -76,7 +82,33 @@ class SaleResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])->defaultSort('created_at', 'desc')
             ->filters([
-                //
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('from'),
+                        DatePicker::make('to'),
+                    ])->columns(2)
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['to'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
+                SelectFilter::make('payment_method')
+                    ->options([
+                        "cash" => "cash",
+                        "upi" => "upi",
+                        "bank transfer"=>"bank transfer",
+                        "cheque" => "cheque"
+                    ]),
+            ], layout: FiltersLayout::AboveContent)->filtersFormColumns(4)
+            ->headerActions([
+                ExportAction::make()
+                    ->exporter(SaleExporter::class)
             ])
             ->actions([
                 \Filament\Tables\Actions\Action::make('print receipt')
@@ -87,11 +119,6 @@ class SaleResource extends Resource
                     return route('sale.receipt.download', $sale);
                 }),
                 Tables\Actions\ViewAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ]);
     }
 

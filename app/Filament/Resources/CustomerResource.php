@@ -10,7 +10,9 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CustomerResource extends Resource
@@ -19,9 +21,20 @@ class CustomerResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationGroup = 'Manage Customers';
+    protected static ?string $recordTitleAttribute = 'name';
     public static function shouldRegisterNavigation(): bool
     {
         return auth()->user()->roles->first()->name == 'Admin';
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string | Htmlable
+    {
+        return $record->name;
+    }
+
+    public static function getGlobalSearchResultUrl(Model $record): string
+    {
+        return static::getUrl('credits', ['record' => $record]);
     }
 
     public static function form(Form $form): Form
@@ -70,18 +83,22 @@ class CustomerResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->recordUrl(
+                fn (Model $record): string => static::getUrl('credits',['record' => $record]),
+            );
     }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ManageCustomers::route('/'),
+            'credits' => Pages\CustomerCredits::route('/{record}/credits'),
         ];
     }
 
-    public static function canCreate(): bool
-    {
-        return false;
-    }
+//    public static function canCreate(): bool
+//    {
+//        return false;
+//    }
 }
