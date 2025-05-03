@@ -17,19 +17,14 @@ class ProductCategoryResource extends Resource
 {
     protected static ?string $model = ProductCategory::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cube';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Manage Products';
-    protected static ?string $navigationLabel = 'Category';
-    public static function shouldRegisterNavigation(): bool
-    {
-        return auth()->user()->roles->first()->name == 'Admin';
-    }
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('category_name')
-                    ->autofocus()
                     ->required()
                     ->maxLength(255),
             ]);
@@ -55,7 +50,6 @@ class ProductCategoryResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -64,10 +58,19 @@ class ProductCategoryResource extends Resource
             ]);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+//            RelationManagers\ProductsRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageProductCategories::route('/'),
+            'index' => Pages\ListProductCategories::route('/'),
+            'create' => Pages\CreateProductCategory::route('/create'),
+            'edit' => Pages\EditProductCategory::route('/{record}/edit'),
         ];
     }
 }

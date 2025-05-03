@@ -21,7 +21,8 @@ return new class extends Migration
             $table->integer('cost_price')->unsigned();
             $table->integer('selling_price')->unsigned();
             $table->integer('total_price')->unsigned();
-            $table->integer('discount')->unsigned()->nullable();
+            $table->foreignId('discount_id')->nullable()->constrained()->nullOnDelete();
+            $table->enum('discount_source', ['manual', 'automatic'])->nullable();
             $table->timestamps();
         });
     }

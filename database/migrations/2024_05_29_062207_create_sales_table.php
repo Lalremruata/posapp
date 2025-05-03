@@ -20,6 +20,10 @@ return new class extends Migration
             $table->dateTime('sale_date');
             $table->foreignId('customer_id')->nullable()->constrained('customers');
             $table->decimal('total_amount', 10, 2);
+            $table->decimal('amount_paid', 10, 2);
+            $table->enum('payment_status', ['paid', 'partial', 'unpaid'])
+                ->default('paid');
+            $table->string('invoice_number')->unique();
             $table->timestamps();
         });
     }

@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('sales', function (Blueprint $table) {
-            $table->string('invoice_number')->nullable()->after('total_amount');
+        Schema::create('discount_product', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('discount_id')->constrained()->onDelete('cascade');
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('sales', function (Blueprint $table) {
-            $table->dropColumn('invoice_number');
-        });
+        Schema::dropIfExists('discount_products');
     }
 };

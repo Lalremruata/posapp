@@ -15,6 +15,8 @@ use Filament\Forms\Form;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -62,7 +64,6 @@ class ProductResource extends Resource
                     ->required()
                     ->maxLength(100),
                 Forms\Components\TextInput::make('product_description')
-                    ->required()
                     ->maxLength(200),
                 BarcodeGenerator::make('barcode')
                 ->helperText('Click the button to generate barcode.'),
@@ -105,6 +106,7 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('product_description')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('category.category_name')
+                    ->searchable()
                     ->numeric()
                     ->sortable(),
 //                Tables\Columns\TextColumn::make('selling_price')
@@ -128,8 +130,10 @@ class ProductResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])->defaultSort('created_at', 'desc')
             ->filters([
-                //
-            ])
+
+                SelectFilter::make('category')
+                    ->relationship('category', 'category_name'),
+            ], layout: FiltersLayout::AboveContent)->filtersFormColumns(4)
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('barCode')

@@ -22,7 +22,7 @@ class Product extends Model
     ];
     public function category(): BelongsTo
     {
-        return $this->belongsTo(ProductCategory::class);
+        return $this->belongsTo(ProductCategory::class, 'category_id', 'id');
     }
     public function supplier(): BelongsTo
     {
@@ -44,6 +44,10 @@ class Product extends Model
     public function saleCart()
     {
         return $this->hasMany(SaleCart::class);
+    }
+    public function discountProducts()
+    {
+        return $this->hasMany(DiscountProduct::class);
     }
     public function getProductInfoAttribute()
     {
